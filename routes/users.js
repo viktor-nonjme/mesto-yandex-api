@@ -1,34 +1,10 @@
 const router = require('express').Router();
-const users = require('../db/users.json');
+const usersControl = require('../controllers/users');
 
-router.get('/', (req, res) => {
-  res.send(users);
-});
-
-router.get('/:id', (req, res) => {
-  const user = users.find((u) => u._id === req.params.id);
-  if (user) {
-    res.send(user);
-  }
-  res.status(404).send({ message: 'Пользователя с таким id не существует' });
-});
+router.get('/', usersControl.getUsers);
+router.get('/:id', usersControl.getUser);
+router.post('/', usersControl.createUser);
+router.patch('/:id', usersControl.updateUserName);
+router.patch('/:id/avatar', usersControl.updateAvatar);
 
 module.exports = router;
-
-// router.patch('/:id', (req, res) => {
-//   const user = users.find((u) => u._id === req.params.id);
-//   if (user) {
-//     user.name = req.body.name;
-//     res.send(user);
-//   }
-//   res.status(404).send({ message: 'Произошла ошибка' });
-// });
-
-// router.put('/:id', (req, res) => {
-//   const user = users.find((u) => u._id === req.params.id);
-//   if (user) {
-//     user.name = req.params.name;
-//     res.send(user);
-//   }
-//   res.status(404).send({ message: 'Произошла ошибка' });
-// });
