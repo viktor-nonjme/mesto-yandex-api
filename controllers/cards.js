@@ -33,9 +33,17 @@ const deleteCard = (req, res) => {
       error.statusCode = 404;
       throw error;
     })
-    .then((card) => Card.deleteOne(card))
-    .then((card) => res.send(card))
+    .then((card) => {
+      if (card.owner._id.toString() === req.user._id) {
+        return Card.deleteOne(card);
+      }
+      return Promise.reject(new Error('Недостаточно прав'));
+    })
+    .then(() => res.status(200).send({ message: 'Карточка удалена' }))
     .catch((err) => {
+      if (err.message === 'Недостаточно прав') {
+        return res.status(403).send({ message: 'Недостаточно прав' });
+      }
       if (err.kind === 'ObjectId') {
         return res.status(400).send({ message: 'Невалидный индентификатор' });
       }
@@ -47,16 +55,13 @@ const deleteCard = (req, res) => {
 };
 
 const likeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.id,
-    { $addToSet: { likes: req.user._id } },
-    { new: true }
-  )
+  Card.findById(req.params.id)
     .orFail(() => {
       const error = new Error('Нет карточки с таким id');
       error.statusCode = 404;
       throw error;
     })
+    .then((card) => Card.updateOne(card, { $addToSet: { likes: req.user._id } }, { new: true }))
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.kind === 'ObjectId') {
@@ -70,17 +75,14 @@ const likeCard = (req, res) => {
 };
 
 const dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.id,
-    { $pull: { likes: req.user._id } },
-    { new: true }
-  )
+  Card.findById(req.params.id)
     .orFail(() => {
       const error = new Error('Нет карточки с таким id');
       error.statusCode = 404;
       throw error;
     })
-    .then((card) => res.send(card))
+    .then((card) => Card.updateOne(card, { $pull: { likes: req.user._id } }, { new: true }))
+    .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.kind === 'ObjectId') {
         return res.status(400).send({ message: 'Невалидный идентификатор' });

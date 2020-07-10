@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 
 const routes = require('./routes');
-const error = require('./routes/error');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -11,15 +11,9 @@ const { PORT = 3000 } = process.env;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5efdd51e0c87e90888cceaca'
-  };
-  next();
-});
+app.use(cookieParser());
 
 app.use('/api', routes);
-app.use(error);
 
 mongoose.connect('mongodb://localhost:27017/newdb', {
   useNewUrlParser: true,
