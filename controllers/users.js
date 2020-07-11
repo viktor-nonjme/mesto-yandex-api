@@ -8,7 +8,7 @@ const login = (req, res) => {
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'dev-secret');
       res.cookie('jwt', token, {
-        maxAge: 360000000,
+        maxAge: 36000 * 24 * 7,
         httpOnly: true,
         sameSite: true
       });
